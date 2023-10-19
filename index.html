@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>Local Font Access API</h1>
+<button id="useLocalFonts">Use Local Fonts</button>  
+
+<script>
+useLocalFonts.onclick = async function() {
+  try {
+    // Query for allowed local fonts.
+    const array = await self.queryLocalFonts();
+
+    // Create an element to style.
+    const exampleText = document.createElement("p");
+    exampleText.id = "exampleText";
+    exampleText.innerText = "The quick brown fox jumps over the lazy dog";
+    exampleText.style.fontFamily = "dynamic-font";
+
+    // Create a list of fonts to select from, and a selection handler.
+    const textStyle = document.createElement("style");
+    const fontSelect = document.createElement("select");
+    fontSelect.onchange = e => {
+      const postscriptName = fontSelect.value;
+      console.log("selected:", postscriptName);
+      // An example of styling using @font-face src: local matching.
+      textStyle.textContent = `
+        @font-face {
+          font-family: "dynamic-font";
+          src: local("${postscriptName}");
+        }`;
+    };
+
+    // Populate the list with the available fonts.
+    array.forEach(font => {
+      const option = document.createElement("option");
+      option.text = font.fullName;
+      // postscriptName can be used with @font-face src: local to style elements.
+      option.value = font.postscriptName;
+      fontSelect.append(option);
+    });
+
+    // Add all of the elements to the page.
+    document.body.appendChild(textStyle);
+    document.body.appendChild(exampleText);
+    document.body.appendChild(fontSelect);
+  } catch(e) {
+    // Handle error, e.g. user cancelled the operation.
+    console.warn(`Local font access not available: ${e.message}`);
+  }
+};
+
+</script>
+</body>
+</html>
